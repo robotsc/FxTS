@@ -2,6 +2,7 @@ import {
   concurrent,
   delay,
   filter,
+  flat,
   map,
   pipe,
   range,
@@ -205,6 +206,25 @@ describe("filter", function () {
 
       expect(fn).toBeCalled();
       expect(res).toEqual([2, 4, 6, 8, 10, 12, 14, 16, 18, 20]);
+    }, 2050);
+
+    it("should be filtered by the callback 'map' - 'flat'-  'filter' - 'concurrent'", async function () {
+      const fn = jest.fn();
+      callFuncAfterTime(fn, 2000);
+
+      const res = await pipe(
+        [[1], [[2]], [3], [4], [5], [[6]], [7], [8]],
+        toAsync,
+        (a) => flat(a, 2),
+        map((a) => delay(1000, a)),
+        filter((a) => a % 2 === 0),
+        take(4),
+        concurrent(4),
+        toArray,
+      );
+
+      expect(fn).toBeCalled();
+      expect(res).toEqual([2, 4, 6, 8]);
     }, 2050);
 
     it("should be filtered by the callback 'map' - 'filter' - 'concurrent'", async function () {
